@@ -1,0 +1,11 @@
+- hosts: all
+  sudo: yes
+
+  pre_tasks:
+    - ec2_tags:
+    - ec2_facts:
+
+  roles:
+    - base
+    - elasticsearch
+

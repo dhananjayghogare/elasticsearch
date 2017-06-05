@@ -1,0 +1,51 @@
+{
+  "variables": {
+    "ami_id": "",
+    "private_subnet_id": "",
+    "security_group_id": "",
+    "packer_build_number": "",
+  },
+  "description": "ElasticSearch Image",
+  "builders": [
+    {
+      "ami_name": "elasticsearch-{{user `packer_build_number`}}",
+      "availability_zone": "eu-west-1a",
+      "iam_instance_profile": "app-server",
+      "instance_type": "t2.small",
+      "region": "eu-west-1",
+      "run_tags": {
+        "role": "packer"
+      },
+      "security_group_ids": [
+        "{{user `security_group_id`}}"
+      ],
+      "source_ami": "{{user `ami_id`}}",
+      "ssh_timeout": "10m",
+      "ssh_username": "ubuntu",
+      "subnet_id": "{{user `private_subnet_id`}}",
+      "tags": {
+        "Name": "elasticsearch-packer-image"
+      },
+      "type": "amazon-ebs"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": [ "sleep 10" ]
+    },
+    {
+      "type": "shell",
+      "script": "install_dependencies.sh",
+      "execute_command": "echo '' | {{ .Vars }} sudo -E -S sh '{{ .Path }}'"
+    },
+    {
+      "type": "ansible-local",
+      "playbook_file": "elasticsearch.yml",
+      "extra_arguments": [
+        "--module-path=./modules"
+      ],
+      "playbook_dir": "../../"
+    }
+  ]
+}
